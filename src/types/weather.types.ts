@@ -29,6 +29,7 @@ export interface CurrentWeather {
   feelslike_c: number;
   wind_kph: number;
   last_updated: string;
+  last_updated_epoch: number;
 }
 
 /**
