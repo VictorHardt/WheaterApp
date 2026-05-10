@@ -5,7 +5,13 @@
     "version": "1.0.0",
     "scheme": "weatherapp",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Permita o acesso à sua localização para mostrar a previsão do tempo da sua região."
+        }
+      ]
     ]
   }
 }
