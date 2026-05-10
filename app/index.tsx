@@ -1,6 +1,13 @@
-import { View, Text } from 'react-native';
+import { View, Text, Button } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
+    const router = useRouter();
+
+    const goToDetails = (date: string) => {
+        router.push(`/details/${date}`);
+    };
+
     return (
         <View
             style={{
@@ -9,7 +16,8 @@ export default function HomeScreen() {
                 alignItems: 'center',
             }}
         >
-            <Text>Weather App</Text>
+            <Text style={{ fontSize: 24, marginBottom: 20, fontWeight: 'bold' }}>Weather App</Text>
+            <Button title="Ver detalhes de 2024-01-15" onPress={() => goToDetails('2024-01-15')} />
         </View>
     );
 }
