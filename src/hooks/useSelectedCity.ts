@@ -4,7 +4,8 @@ import { useWeather } from './useWeather';
 
 export const useSelectedCity = () => {
   const { selectedCity, setSelectedCity } = useCityStore();
-  const { coords } = useLocation();
+  const location = useLocation();
+  const { coords, permissionStatus, isLoading: isLocationLoading } = location;
 
   // Se selectedCity no store for null, usa coordenadas do GPS
   const locationQuery = selectedCity 
@@ -13,11 +14,14 @@ export const useSelectedCity = () => {
       ? `${coords.latitude},${coords.longitude}` 
       : null;
 
-  const weather = useWeather(locationQuery);
+  // Se a permissão foi negada e não há cidade selecionada, o fallback pode ser aplicado na UI
+  const weather = useWeather(locationQuery || (permissionStatus === 'denied' && !selectedCity ? 'São Paulo' : null));
 
   return {
     ...weather,
     selectedCity,
     setSelectedCity,
+    permissionStatus,
+    isLocationLoading,
   };
 };
