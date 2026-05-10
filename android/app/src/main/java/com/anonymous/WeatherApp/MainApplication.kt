@@ -1,4 +1,4 @@
-package com.weatherapp
+package com.anonymous.WeatherApp
 
 import android.app.Application
 import android.content.res.Configuration

@@ -12,6 +12,16 @@
           "locationAlwaysAndWhenInUsePermission": "Permita o acesso à sua localização para mostrar a previsão do tempo da sua região."
         }
       ]
-    ]
+    ],
+    "android": {
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "package": "com.anonymous.WeatherApp"
+    },
+    "ios": {
+      "bundleIdentifier": "com.anonymous.WeatherApp"
+    }
   }
 }
