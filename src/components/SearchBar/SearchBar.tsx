@@ -129,7 +129,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
         )}
         
         {!isLoading && (selectedCity || query.length > 0) && (
-          <TouchableOpacity onPress={handleClear} style={styles.rightIcon}>
+          <TouchableOpacity 
+            onPress={handleClear} 
+            style={styles.rightIcon}
+            accessibilityLabel="Limpar pesquisa"
+            accessibilityRole="button"
+          >
             <Ionicons name="close-circle" size={20} color={theme.colors.textSecondary} />
           </TouchableOpacity>
         )}
@@ -141,13 +146,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
           {isLoading && isSearching && <ActivityIndicator style={styles.loader} color={theme.colors.accentBlue} />}
           {isError && isSearching && <Text style={styles.errorText}>Erro ao buscar cidades</Text>}
           {!isLoading && !isError && isSearching && (!results || results.length === 0) && (
-            <Text style={styles.noResultsText}>Nenhuma cidade encontrada</Text>
+            <View style={styles.emptyContainer}>
+              <Ionicons name="search-outline" size={32} color={theme.colors.textMuted} />
+              <Text style={styles.noResultsText}>Nenhuma cidade encontrada</Text>
+            </View>
           )}
 
           {!isSearching && searchHistory.length > 0 && (
             <View style={styles.historyHeader}>
               <Text style={styles.historyTitle}>Buscas recentes</Text>
-              <TouchableOpacity onPress={clearSearchHistory}>
+              <TouchableOpacity 
+                onPress={clearSearchHistory}
+                accessibilityLabel="Limpar histórico de buscas"
+                accessibilityRole="button"
+              >
                 <Text style={styles.clearHistoryText}>Limpar</Text>
               </TouchableOpacity>
             </View>
@@ -159,7 +171,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
             keyboardShouldPersistTaps="handled"
             style={styles.list}
             renderItem={({ item }) => (
-              <TouchableOpacity style={styles.resultItem} onPress={() => handleSelect(item)}>
+              <TouchableOpacity 
+                style={styles.resultItem} 
+                onPress={() => handleSelect(item)}
+                accessibilityLabel={`Selecionar cidade ${item.name}, ${item.region}`}
+                accessibilityRole="button"
+              >
                 {!isSearching && <Ionicons name="time-outline" size={16} color={theme.colors.textSecondary} style={{ marginRight: 8 }} />}
                 <View style={{ flex: 1 }}>
                   <Text style={styles.resultName}>{item.name}</Text>
@@ -277,9 +294,15 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.creat
     color: theme.colors.error,
     textAlign: 'center',
   },
+  emptyContainer: {
+    padding: theme.spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   noResultsText: {
-    padding: theme.spacing.md,
-    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.sm,
+    color: theme.colors.textMuted,
     textAlign: 'center',
+    fontSize: theme.typography.md,
   },
 });

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ForecastDay } from '../../types';
 import { useAppTheme } from '../../hooks/useAppTheme';
@@ -30,8 +30,25 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ forecastDay, isToday, 
 
   const dateLabel = formatDate(date, isToday, isTomorrow);
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
+
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.cardWrapper}>
+    <Animated.View style={{ opacity: fadeAnim }}>
+      <TouchableOpacity 
+        onPress={onPress} 
+        activeOpacity={0.8} 
+        style={styles.cardWrapper}
+        accessibilityLabel={`Previsão para ${dateLabel}. Condição: ${day.condition.text}. Máxima de ${Math.round(day.maxtemp_c)} graus, Mínima de ${Math.round(day.mintemp_c)} graus.`}
+        accessibilityRole="button"
+      >
       <LinearGradient 
         colors={theme.colors.gradientCard} 
         style={styles.card}
@@ -57,7 +74,8 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ forecastDay, isToday, 
           </View>
         </View>
       </LinearGradient>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 

@@ -22,7 +22,7 @@ export default function DetailsScreen() {
       <View style={styles.centerContainer}>
         <Stack.Screen options={{ title: 'Erro' }} />
         <Text style={styles.errorText}>Dados não encontrados para essa data.</Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="Voltar para a tela anterior" accessibilityRole="button">
           <Text style={styles.backButtonText}>Voltar</Text>
         </TouchableOpacity>
       </View>
@@ -163,8 +163,8 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.creat
     marginBottom: theme.spacing.md,
   },
   icon: {
-    width: 64,
-    height: 64,
+    width: 96,
+    height: 96,
     marginRight: theme.spacing.md,
   },
   conditionText: {

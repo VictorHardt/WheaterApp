@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, RefreshControl, StyleSheet, Alert, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, StyleSheet, Alert, TouchableOpacity, Linking } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelectedCity } from '../src/hooks/useSelectedCity';
@@ -11,6 +12,7 @@ export default function HomeScreen() {
   const theme = useAppTheme();
   const styles = createStyles(theme);
   const { themeMode, setThemeMode } = useThemeStore();
+  const insets = useSafeAreaInsets();
   const {
     forecast,
     isLoading,
@@ -67,7 +69,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -75,7 +77,12 @@ export default function HomeScreen() {
         }
       >
         <View style={styles.headerContainer}>
-          <TouchableOpacity onPress={cycleTheme} style={styles.themeToggle}>
+          <TouchableOpacity 
+            onPress={cycleTheme} 
+            style={styles.themeToggle}
+            accessibilityLabel="Alternar tema"
+            accessibilityRole="button"
+          >
             <Ionicons name={getThemeIcon()} size={24} color={theme.colors.textPrimary} />
           </TouchableOpacity>
           <View style={styles.cityTitleContainer}>
@@ -83,6 +90,12 @@ export default function HomeScreen() {
             <Text style={styles.cityTitle}>
               {forecast?.location.name || 'Buscando localização...'}
             </Text>
+            {isFromCache && (
+              <View style={styles.offlineBadge}>
+                <Ionicons name="cloud-offline" size={12} color={theme.colors.warning} />
+                <Text style={styles.offlineText}>Offline</Text>
+              </View>
+            )}
           </View>
           {forecast?.location.region ? (
             <Text style={styles.regionTitle}>
@@ -90,6 +103,18 @@ export default function HomeScreen() {
             </Text>
           ) : null}
         </View>
+
+        {permissionStatus === 'denied' && !selectedCity && (
+          <View style={styles.permissionBanner}>
+            <Ionicons name="warning-outline" size={20} color={theme.colors.warning} style={{ marginRight: 8 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.permissionText}>Localização desabilitada. Usando cidade padrão: São Paulo</Text>
+              <TouchableOpacity onPress={() => Linking.openSettings()}>
+                <Text style={styles.permissionButton}>Abrir Configurações</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         <SearchBar onCitySelect={setSelectedCity} />
 
@@ -101,7 +126,7 @@ export default function HomeScreen() {
           <View>
             {forecast.forecast.forecastday.slice(0, 3).map((day, index) => (
               <WeatherCard
-                key={day.date}
+                key={`${forecast.location.name}-${day.date}`}
                 forecastDay={day}
                 isToday={index === 0}
                 onPress={() => goToDetails(day.date)}
@@ -118,7 +143,7 @@ export default function HomeScreen() {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -170,5 +195,42 @@ const createStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.creat
   footerText: {
     fontSize: theme.typography.sm,
     color: theme.colors.textMuted,
+  },
+  offlineBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 183, 77, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: theme.spacing.sm,
+  },
+  offlineText: {
+    fontSize: 10,
+    fontWeight: theme.typography.bold,
+    color: theme.colors.warning,
+    marginLeft: 4,
+    textTransform: 'uppercase',
+  },
+  permissionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 183, 77, 0.1)',
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 183, 77, 0.3)',
+  },
+  permissionText: {
+    fontSize: theme.typography.sm,
+    color: theme.colors.textPrimary,
+    marginBottom: 4,
+  },
+  permissionButton: {
+    fontSize: theme.typography.sm,
+    color: theme.colors.accentBlue,
+    fontWeight: theme.typography.bold,
   },
 });
