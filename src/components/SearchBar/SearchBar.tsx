@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   TextInput, 
@@ -8,7 +8,8 @@ import {
   TouchableOpacity, 
   ActivityIndicator,
   Pressable,
-  Dimensions
+  Dimensions,
+  Keyboard
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,56 +28,67 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   
-  const { selectedCity } = useCityStore();
+  const { selectedCity, searchHistory, addSearchHistory, clearSearchHistory } = useCityStore();
   const queryClient = useQueryClient();
+  const inputRef = useRef<TextInput>(null);
 
   const { results, isLoading, isError } = useCitySearch(debouncedQuery);
 
   // Implementação de Debounce
-  // Análogo ao debounceTime do RxDart no Flutter. 
-  // Evita disparar requisições para a API a cada caractere digitado.
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
     }, 400);
 
-    // Função de cleanup (análoga ao dispose)
     return () => clearTimeout(timer);
   }, [query]);
 
   const handleSelect = (city: CitySearchResult) => {
-    // 1. Atualiza estado e salva no Zustand (persistência)
+    // Adiciona ao histórico do Zustand
+    addSearchHistory(city);
+    
+    // Atualiza estado e notifica
     onCitySelect(city.name);
     
-    // 2. Limpa e fecha a lista
+    // Limpa e fecha a lista
     setQuery('');
     setDebouncedQuery('');
     setIsFocused(false);
+    Keyboard.dismiss();
     
-    // 3. Força nova busca (análogo ao refetch / notifyListeners)
+    // Força nova busca
     queryClient.invalidateQueries({ queryKey: ['weather'] });
   };
 
   const handleClear = () => {
     setQuery('');
     setDebouncedQuery('');
+    
     if (selectedCity) {
       onCitySelect(null); // Volta para o GPS
       queryClient.invalidateQueries({ queryKey: ['weather'] });
     }
-    setIsFocused(false);
+    
+    // IMPORTANTE: NÃO forçamos setIsFocused(false) aqui, senão o estado 
+    // do React perde sincronia com o estado nativo do campo, deixando ele "morto".
+    // Apenas focamos o campo de volta para ele digitar uma nova cidade.
+    inputRef.current?.focus();
   };
 
   const handleDismiss = () => {
     setIsFocused(false);
     setQuery('');
     setDebouncedQuery('');
+    Keyboard.dismiss();
   };
 
   // Lógica de exibição da cidade atual vs placeholder
   const showLocationIcon = !isFocused && selectedCity && query === '';
   const placeholderText = showLocationIcon ? selectedCity : "Buscar cidade...";
   const placeholderColor = showLocationIcon ? "#333333" : "#999999";
+
+  const isSearching = debouncedQuery.length >= 2;
+  const displayData = isSearching ? results : searchHistory;
 
   return (
     <View style={styles.container}>
@@ -94,6 +106,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
         )}
         
         <TextInput
+          ref={inputRef}
           style={[
             styles.input, 
             showLocationIcon && { paddingLeft: 40 }
@@ -107,7 +120,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
           autoCorrect={false}
         />
         
-        {isLoading && query.length >= 2 && (
+        {isLoading && isSearching && (
           <ActivityIndicator size="small" color="#1e88e5" style={styles.rightIcon} />
         )}
         
@@ -118,26 +131,36 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
         )}
       </View>
       
-      {/* Lista de Sugestões / Dropdown */}
-      {isFocused && debouncedQuery.length >= 2 && (
+      {/* Lista de Sugestões / Dropdown (Histórico ou Resultados) */}
+      {isFocused && (isSearching || searchHistory.length > 0) && (
         <View style={styles.resultsContainer}>
-          {isLoading && <ActivityIndicator style={styles.loader} color="#1e88e5" />}
-          {isError && <Text style={styles.errorText}>Erro ao buscar cidades</Text>}
-          {!isLoading && !isError && (!results || results.length === 0) && (
+          {isLoading && isSearching && <ActivityIndicator style={styles.loader} color="#1e88e5" />}
+          {isError && isSearching && <Text style={styles.errorText}>Erro ao buscar cidades</Text>}
+          {!isLoading && !isError && isSearching && (!results || results.length === 0) && (
             <Text style={styles.noResultsText}>Nenhuma cidade encontrada</Text>
           )}
+
+          {!isSearching && searchHistory.length > 0 && (
+            <View style={styles.historyHeader}>
+              <Text style={styles.historyTitle}>Buscas recentes</Text>
+              <TouchableOpacity onPress={clearSearchHistory}>
+                <Text style={styles.clearHistoryText}>Limpar</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           
-          {/* FlatList é otimizado para listas, diferente do ScrollView */}
-          {/* O keyboardShouldPersistTaps="handled" é crucial para permitir o clique antes de esconder o teclado */}
           <FlatList
-            data={results}
+            data={displayData}
             keyExtractor={(item) => item.id.toString()}
             keyboardShouldPersistTaps="handled"
             style={styles.list}
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.resultItem} onPress={() => handleSelect(item)}>
-                <Text style={styles.resultName}>{item.name}</Text>
-                <Text style={styles.resultRegion}>{item.region}, {item.country}</Text>
+                {!isSearching && <Ionicons name="time-outline" size={16} color="#999" style={{ marginRight: 8 }} />}
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.resultName}>{item.name}</Text>
+                  <Text style={styles.resultRegion}>{item.region}, {item.country}</Text>
+                </View>
               </TouchableOpacity>
             )}
           />
@@ -201,7 +224,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 8,
     marginTop: 4,
-    maxHeight: 250,
+    maxHeight: 300,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -217,10 +240,30 @@ const styles = StyleSheet.create({
   list: {
     maxHeight: 250,
   },
+  historyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  historyTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  clearHistoryText: {
+    fontSize: 14,
+    color: '#1e88e5',
+  },
   resultItem: {
     padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   resultName: {
     fontSize: 16,
