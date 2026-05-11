@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, RefreshControl, StyleSheet, Alert, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, StyleSheet, Alert, SafeAreaView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useSelectedCity } from '../src/hooks/useSelectedCity';
 import { WeatherCard, LoadingSkeleton, ErrorState, SearchBar } from '../src/components';
-
+import { useAppTheme } from '../src/hooks/useAppTheme';
+import { useThemeStore } from '../src/store';
 export default function HomeScreen() {
   const router = useRouter();
+  const theme = useAppTheme();
+  const styles = createStyles(theme);
+  const { themeMode, setThemeMode } = useThemeStore();
   const {
     forecast,
     isLoading,
@@ -49,26 +54,44 @@ export default function HomeScreen() {
     return `Atualizado há ${diffInMinutes} min`;
   };
 
+  const cycleTheme = () => {
+    if (themeMode === 'system') setThemeMode('light');
+    else if (themeMode === 'light') setThemeMode('dark');
+    else setThemeMode('system');
+  };
+
+  const getThemeIcon = () => {
+    if (themeMode === 'system') return 'settings-outline';
+    if (themeMode === 'light') return 'sunny-outline';
+    return 'moon-outline';
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <SearchBar onCitySelect={setSelectedCity} />
-
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} colors={['#1e88e5']} />
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} colors={[theme.colors.accentBlue]} tintColor={theme.colors.accentBlue} />
         }
       >
         <View style={styles.headerContainer}>
-          <Text style={styles.cityTitle}>
-            {forecast?.location.name || 'Buscando localização...'}
-          </Text>
+          <TouchableOpacity onPress={cycleTheme} style={styles.themeToggle}>
+            <Ionicons name={getThemeIcon()} size={24} color={theme.colors.textPrimary} />
+          </TouchableOpacity>
+          <View style={styles.cityTitleContainer}>
+            <Ionicons name="location-sharp" size={24} color={theme.colors.textPrimary} />
+            <Text style={styles.cityTitle}>
+              {forecast?.location.name || 'Buscando localização...'}
+            </Text>
+          </View>
           {forecast?.location.region ? (
             <Text style={styles.regionTitle}>
               {forecast.location.region}, {forecast.location.country}
             </Text>
           ) : null}
         </View>
+
+        <SearchBar onCitySelect={setSelectedCity} />
 
         {(isLoading || isLocationLoading) && !isRefreshing ? (
           <LoadingSkeleton />
@@ -99,38 +122,53 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 24,
+    paddingBottom: theme.spacing.lg,
   },
   headerContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.sm,
     alignItems: 'center',
+    position: 'relative',
+  },
+  themeToggle: {
+    position: 'absolute',
+    right: theme.spacing.md,
+    top: theme.spacing.md,
+    zIndex: 10,
+    padding: theme.spacing.xs,
+  },
+  cityTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cityTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontSize: theme.typography.xl,
+    fontWeight: theme.typography.bold,
+    color: theme.colors.textPrimary,
     textAlign: 'center',
+    marginLeft: theme.spacing.xs,
   },
   regionTitle: {
-    fontSize: 16,
-    color: '#666666',
-    marginTop: 4,
+    fontSize: theme.typography.md,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
     textAlign: 'center',
   },
   footer: {
-    marginTop: 24,
+    marginTop: theme.spacing.lg,
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 12,
-    color: '#999999',
+    fontSize: theme.typography.sm,
+    color: theme.colors.textMuted,
   },
 });

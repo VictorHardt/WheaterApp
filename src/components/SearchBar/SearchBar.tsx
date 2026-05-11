@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCitySearch } from '../../hooks/useCitySearch';
 import { CitySearchResult } from '../../types';
 import { useCityStore } from '../../store';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface SearchBarProps {
   onCitySelect: (city: string | null) => void;
@@ -27,6 +28,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  
+  const theme = useAppTheme();
+  const styles = createStyles(theme);
   
   const { selectedCity, searchHistory, addSearchHistory, clearSearchHistory } = useCityStore();
   const queryClient = useQueryClient();
@@ -85,7 +89,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
   // Lógica de exibição da cidade atual vs placeholder
   const showLocationIcon = !isFocused && selectedCity && query === '';
   const placeholderText = showLocationIcon ? selectedCity : "Buscar cidade...";
-  const placeholderColor = showLocationIcon ? "#333333" : "#999999";
+  const placeholderColor = showLocationIcon ? theme.colors.textPrimary : theme.colors.textSecondary;
 
   const isSearching = debouncedQuery.length >= 2;
   const displayData = isSearching ? results : searchHistory;
@@ -102,7 +106,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
 
       <View style={styles.inputContainer}>
         {showLocationIcon && (
-          <Ionicons name="location-sharp" size={20} color="#1e88e5" style={styles.leftIcon} />
+          <Ionicons name="location-sharp" size={20} color={theme.colors.accentBlue} style={styles.leftIcon} />
         )}
         
         <TextInput
@@ -121,12 +125,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
         />
         
         {isLoading && isSearching && (
-          <ActivityIndicator size="small" color="#1e88e5" style={styles.rightIcon} />
+          <ActivityIndicator size="small" color={theme.colors.accentBlue} style={styles.rightIcon} />
         )}
         
         {!isLoading && (selectedCity || query.length > 0) && (
           <TouchableOpacity onPress={handleClear} style={styles.rightIcon}>
-            <Ionicons name="close-circle" size={20} color="#999999" />
+            <Ionicons name="close-circle" size={20} color={theme.colors.textSecondary} />
           </TouchableOpacity>
         )}
       </View>
@@ -134,7 +138,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
       {/* Lista de Sugestões / Dropdown (Histórico ou Resultados) */}
       {isFocused && (isSearching || searchHistory.length > 0) && (
         <View style={styles.resultsContainer}>
-          {isLoading && isSearching && <ActivityIndicator style={styles.loader} color="#1e88e5" />}
+          {isLoading && isSearching && <ActivityIndicator style={styles.loader} color={theme.colors.accentBlue} />}
           {isError && isSearching && <Text style={styles.errorText}>Erro ao buscar cidades</Text>}
           {!isLoading && !isError && isSearching && (!results || results.length === 0) && (
             <Text style={styles.noResultsText}>Nenhuma cidade encontrada</Text>
@@ -156,7 +160,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
             style={styles.list}
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.resultItem} onPress={() => handleSelect(item)}>
-                {!isSearching && <Ionicons name="time-outline" size={16} color="#999" style={{ marginRight: 8 }} />}
+                {!isSearching && <Ionicons name="time-outline" size={16} color={theme.colors.textSecondary} style={{ marginRight: 8 }} />}
                 <View style={{ flex: 1 }}>
                   <Text style={styles.resultName}>{item.name}</Text>
                   <Text style={styles.resultRegion}>{item.region}, {item.country}</Text>
@@ -170,12 +174,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   container: {
     position: 'relative',
     zIndex: 10,
-    marginHorizontal: 16,
-    marginVertical: 12,
+    marginHorizontal: theme.spacing.md,
+    marginVertical: theme.spacing.sm,
   },
   backdrop: {
     position: 'absolute',
@@ -192,18 +196,15 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   input: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.md,
     paddingVertical: 12,
-    fontSize: 16,
+    fontSize: theme.typography.md,
+    color: theme.colors.textPrimary,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    borderColor: theme.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+    ...theme.shadows.light,
   },
   leftIcon: {
     position: 'absolute',
@@ -221,21 +222,17 @@ const styles = StyleSheet.create({
     top: '100%',
     left: 0,
     right: 0,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    marginTop: 4,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius: theme.borderRadius.md,
+    marginTop: theme.spacing.xs,
     maxHeight: 300,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
+    ...theme.shadows.card,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: theme.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
     zIndex: 5,
   },
   loader: {
-    padding: 16,
+    padding: theme.spacing.md,
   },
   list: {
     maxHeight: 250,
@@ -244,45 +241,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: theme.spacing.md,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: theme.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
   },
   historyTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontSize: theme.typography.sm,
+    fontWeight: theme.typography.semibold,
+    color: theme.colors.textSecondary,
   },
   clearHistoryText: {
-    fontSize: 14,
-    color: '#1e88e5',
+    fontSize: theme.typography.sm,
+    color: theme.colors.accentBlue,
   },
   resultItem: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: theme.isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
     flexDirection: 'row',
     alignItems: 'center',
   },
   resultName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333333',
+    fontSize: theme.typography.md,
+    fontWeight: theme.typography.medium,
+    color: theme.colors.textPrimary,
   },
   resultRegion: {
-    fontSize: 14,
-    color: '#777777',
+    fontSize: theme.typography.sm,
+    color: theme.colors.textSecondary,
     marginTop: 2,
   },
   errorText: {
-    padding: 16,
-    color: '#e53935',
+    padding: theme.spacing.md,
+    color: theme.colors.error,
     textAlign: 'center',
   },
   noResultsText: {
-    padding: 16,
-    color: '#777777',
+    padding: theme.spacing.md,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
 });

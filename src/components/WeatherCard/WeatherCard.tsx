@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ForecastDay } from '../../types';
-
+import { useAppTheme } from '../../hooks/useAppTheme';
 interface WeatherCardProps {
   forecastDay: ForecastDay;
   isToday: boolean;
@@ -18,6 +19,8 @@ const formatDate = (dateString: string, isToday: boolean, isTomorrow: boolean) =
 
 export const WeatherCard: React.FC<WeatherCardProps> = ({ forecastDay, isToday, onPress }) => {
   const { day, date } = forecastDay;
+  const theme = useAppTheme();
+  const styles = createStyles(theme);
   
   // Calcula se é amanhã
   const today = new Date();
@@ -28,54 +31,58 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ forecastDay, isToday, 
   const dateLabel = formatDate(date, isToday, isTomorrow);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      <View style={styles.header}>
-        <Text style={styles.dateText}>{dateLabel}</Text>
-      </View>
-      
-      <View style={styles.body}>
-        <Image 
-          source={{ uri: `https:${day.condition.icon}` }} 
-          style={styles.icon} 
-        />
-        <View style={styles.infoContainer}>
-          <Text style={styles.conditionText}>{day.condition.text}</Text>
-          <View style={styles.tempContainer}>
-            <Text style={styles.maxTemp}>{Math.round(day.maxtemp_c)}°</Text>
-            <Text style={styles.minTemp}> / {Math.round(day.mintemp_c)}°</Text>
-          </View>
-          <Text style={styles.humidity}>Umidade: {day.avghumidity}%</Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.cardWrapper}>
+      <LinearGradient 
+        colors={theme.colors.gradientCard} 
+        style={styles.card}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.header}>
+          <Text style={styles.dateText}>{dateLabel}</Text>
         </View>
-      </View>
+        
+        <View style={styles.body}>
+          <Image 
+            source={{ uri: `https:${day.condition.icon}` }} 
+            style={styles.icon} 
+          />
+          <View style={styles.infoContainer}>
+            <Text style={styles.conditionText}>{day.condition.text}</Text>
+            <View style={styles.tempContainer}>
+              <Text style={styles.maxTemp}>{Math.round(day.maxtemp_c)}°</Text>
+              <Text style={styles.minTemp}> / {Math.round(day.mintemp_c)}°</Text>
+            </View>
+            <Text style={styles.humidity}>Umidade: {day.avghumidity}%</Text>
+          </View>
+        </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
+  cardWrapper: {
+    marginVertical: theme.spacing.sm,
+    marginHorizontal: theme.spacing.md,
+    ...theme.shadows.card,
+  },
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    marginVertical: 8,
-    marginHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: theme.isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
   },
   header: {
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    paddingBottom: 8,
-    marginBottom: 8,
+    borderBottomColor: theme.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    paddingBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
   },
   dateText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontSize: theme.typography.lg,
+    fontWeight: theme.typography.bold,
+    color: theme.colors.textPrimary,
     textTransform: 'capitalize',
   },
   body: {
@@ -85,32 +92,32 @@ const styles = StyleSheet.create({
   icon: {
     width: 64,
     height: 64,
-    marginRight: 16,
+    marginRight: theme.spacing.md,
   },
   infoContainer: {
     flex: 1,
   },
   conditionText: {
-    fontSize: 16,
-    color: '#555555',
-    marginBottom: 4,
+    fontSize: theme.typography.md,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.xs,
   },
   tempContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: 4,
+    marginBottom: theme.spacing.xs,
   },
   maxTemp: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#e53935',
+    fontSize: 28,
+    fontWeight: theme.typography.bold,
+    color: theme.colors.textPrimary,
   },
   minTemp: {
-    fontSize: 18,
-    color: '#1e88e5',
+    fontSize: theme.typography.lg,
+    color: theme.colors.textSecondary,
   },
   humidity: {
-    fontSize: 14,
-    color: '#777777',
+    fontSize: theme.typography.sm,
+    color: theme.colors.textMuted,
   },
 });

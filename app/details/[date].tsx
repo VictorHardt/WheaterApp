@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSelectedCity } from '../../src/hooks/useSelectedCity';
+import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { HourlyChart } from '../../src/components';
 
 export default function DetailsScreen() {
@@ -11,6 +12,8 @@ export default function DetailsScreen() {
   // Como usamos a mesma key da home, o TanStack Query retorna os dados instantaneamente do cache.
   // Nenhum loading spinner será necessário se já carregou antes.
   const { forecast } = useSelectedCity();
+  const theme = useAppTheme();
+  const styles = createStyles(theme);
 
   const dayForecast = forecast?.forecast.forecastday.find((d) => d.date === date);
 
@@ -43,7 +46,9 @@ export default function DetailsScreen() {
           headerShown: true, 
           title: 'Detalhes da Previsão',
           headerBackTitle: 'Voltar',
-          headerTintColor: '#1e88e5',
+          headerTintColor: theme.colors.accentBlue,
+          headerStyle: { backgroundColor: theme.colors.surface },
+          headerTitleStyle: { color: theme.colors.textPrimary },
         }} 
       />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -97,87 +102,86 @@ export default function DetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: ReturnType<typeof useAppTheme>) => StyleSheet.create({
   centerContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.background,
   },
   errorText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 16,
+    fontSize: theme.typography.md,
+    color: theme.colors.error,
+    marginBottom: theme.spacing.md,
   },
   backButton: {
-    backgroundColor: '#1e88e5',
-    paddingHorizontal: 24,
+    backgroundColor: theme.colors.accentBlue,
+    paddingHorizontal: theme.spacing.lg,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: theme.borderRadius.sm,
   },
   backButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: theme.typography.bold,
   },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
   },
   content: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: theme.spacing.md,
+    paddingBottom: theme.spacing.xl,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: theme.spacing.lg,
   },
   dateTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: theme.typography.lg,
+    fontWeight: theme.typography.bold,
+    color: theme.colors.textPrimary,
     textTransform: 'capitalize',
   },
   locationTitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 4,
+    fontSize: theme.typography.md,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
   },
   summaryCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
-    marginBottom: 24,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    ...theme.shadows.card,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+    marginBottom: theme.spacing.lg,
   },
   summaryMain: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: theme.spacing.md,
   },
   icon: {
     width: 64,
     height: 64,
-    marginRight: 16,
+    marginRight: theme.spacing.md,
   },
   conditionText: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 4,
+    fontSize: theme.typography.lg,
+    fontWeight: theme.typography.medium,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.xs,
   },
   maxMinTemp: {
-    fontSize: 18,
-    color: '#1e88e5',
-    fontWeight: 'bold',
+    fontSize: theme.typography.lg,
+    color: theme.colors.accentBlue,
+    fontWeight: theme.typography.bold,
   },
   divider: {
     height: 1,
-    backgroundColor: '#eee',
-    marginVertical: 16,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginVertical: theme.spacing.md,
   },
   detailsGrid: {
     flexDirection: 'row',
@@ -186,24 +190,24 @@ const styles = StyleSheet.create({
   },
   detailItem: {
     width: '48%',
-    marginBottom: 16,
+    marginBottom: theme.spacing.md,
   },
   detailLabel: {
-    fontSize: 12,
-    color: '#888',
-    marginBottom: 4,
+    fontSize: theme.typography.sm,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.xs,
   },
   detailValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: theme.typography.md,
+    fontWeight: theme.typography.semibold,
+    color: theme.colors.textPrimary,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginLeft: 8,
-    marginBottom: 8,
+    fontSize: theme.typography.lg,
+    fontWeight: theme.typography.bold,
+    color: theme.colors.textPrimary,
+    marginLeft: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
   },
 });
 
