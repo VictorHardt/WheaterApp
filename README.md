@@ -121,6 +121,7 @@ O aplicativo possui uma divisão de responsabilidades clara e concisa para fáci
 
 ## Limitações Conhecidas e Próximos Passos
 Como todo projeto de escopo limitado, há sempre espaços para ampliação:
+- **Linting:** O projeto não possui configuração completa do ESLint para a verificação de regras de estilo, devendo ser adicionado no futuro.
 - **Sem notificações push:** Adicionar um worker nativo (background) para fornecer notificações em caso de alertas de mudanças severas ou chuva.
 - **Sem widget de tela inicial:** Criar *Home Screen Widgets* nativos (Swift/Kotlin) usando as extensões de App, compartilhando o armazenamento local entre a parte nativa e o Expo.
 - **Múltiplas Cidades Favoritas:** Expandir a interface e o banco para acomodar o rastreamento concorrente de dezenas de cidades numa listagem *carousel* global.
