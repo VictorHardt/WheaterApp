@@ -3,8 +3,8 @@
 ## Visão Geral
 O **WeatherApp** é um aplicativo mobile de previsão do tempo moderno e performático, focado em fornecer dados meteorológicos com uma excelente experiência de usuário. Ele oferece dados atuais, gráficos com previsões horárias, buscas por cidades e suporte a modo escuro/claro com temas fluidos.
 
-> [!NOTE]
-> *[🖼️ Placeholder: Inserir screenshots ou GIFs do app aqui]*
+<img width="1290" height="2796" alt="simulator_screenshot_04B9B14D-E506-4544-8F35-08B8901BEAA0" src="https://github.com/user-attachments/assets/0adf0ade-48e8-4853-968c-8759bb8e6686" />
+<img width="1290" height="2796" alt="simulator_screenshot_CB687C50-D7AE-41A6-BF5B-4D4C34F51F9E" src="https://github.com/user-attachments/assets/5f461a23-ca62-46d2-9c1b-4e78982ccef4" />
 
 ## Configuração e Execução
 
