@@ -45,6 +45,10 @@ export const HourlyChart: React.FC<HourlyChartProps> = ({ hourlyData }) => {
         height={220}
         initialSpacing={10}
         spacing={(screenWidth - 100) / 6} // Aproximadamente para caber os 6 pontos principais (4 em 4 horas)
+        disableScroll={false}
+        showScrollIndicator={true}
+        indicatorColor={theme.isDarkMode ? 'white' : 'black'}
+        nestedScrollEnabled={true}
         hideRules
         yAxisThickness={0}
         xAxisThickness={1}
@@ -58,7 +62,7 @@ export const HourlyChart: React.FC<HourlyChartProps> = ({ hourlyData }) => {
           radius: 6,
           pointerLabelWidth: 80,
           pointerLabelHeight: 90,
-          activatePointersOnLongPress: false,
+          activatePointersOnLongPress: true,
           autoAdjustPointerLabelPosition: false,
           pointerLabelComponent: (items: any) => {
             return (
