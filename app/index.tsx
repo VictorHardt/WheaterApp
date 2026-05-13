@@ -19,6 +19,7 @@ export default function HomeScreen() {
     isError,
     isFromCache,
     lastUpdated,
+    dataUpdatedAt,
     refetch,
     selectedCity,
     setSelectedCity,
@@ -27,6 +28,14 @@ export default function HomeScreen() {
   } = useSelectedCity();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 30000); // Atualiza a tela a cada 30 segundos
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (permissionStatus === 'denied' && !selectedCity) {
@@ -47,13 +56,12 @@ export default function HomeScreen() {
     router.push(`/details/${date}`);
   };
 
-  const formatLastUpdated = () => {
-    if (!lastUpdated) return '';
-    const now = new Date().getTime();
-    const diffInMinutes = Math.floor((now - lastUpdated) / 60000);
+  const formatTimeDiff = (timestamp: number | null | undefined, prefix: string) => {
+    if (!timestamp) return '';
+    const diffInMinutes = Math.floor((currentTime - timestamp) / 60000);
     
-    if (diffInMinutes < 1) return 'Agora';
-    return `Atualizado há ${diffInMinutes} min`;
+    if (diffInMinutes < 1) return `${prefix} agora`;
+    return `${prefix} há ${diffInMinutes} min`;
   };
 
   const cycleTheme = () => {
@@ -137,9 +145,21 @@ export default function HomeScreen() {
 
         {!isLoading && !isLocationLoading && forecast && (
           <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              {isFromCache ? '⚠️ Dados offline • ' : ''}{formatLastUpdated()}
-            </Text>
+            {isFromCache && (
+              <Text style={[styles.footerText, { color: theme.colors.warning, marginBottom: 4 }]}>
+                ⚠️ Dados offline
+              </Text>
+            )}
+            {lastUpdated ? (
+              <Text style={styles.footerText}>
+                {formatTimeDiff(lastUpdated, 'Clima medido')}
+              </Text>
+            ) : null}
+            {dataUpdatedAt ? (
+              <Text style={styles.footerText}>
+                {formatTimeDiff(dataUpdatedAt, 'App sincronizado')}
+              </Text>
+            ) : null}
           </View>
         )}
       </ScrollView>

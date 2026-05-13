@@ -8,6 +8,7 @@ export const useWeather = (location: string | null) => {
     isLoading,
     isError,
     refetch,
+    dataUpdatedAt,
   } = useQuery({
     queryKey: ['weather', location],
     queryFn: async () => {
@@ -41,6 +42,7 @@ export const useWeather = (location: string | null) => {
     isError,
     isFromCache,
     lastUpdated,
+    dataUpdatedAt,
     refetch,
   };
 };
