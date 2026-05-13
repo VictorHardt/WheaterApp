@@ -3,7 +3,7 @@ import {
   View, 
   TextInput, 
   StyleSheet, 
-  FlatList, 
+  ScrollView, 
   Text, 
   TouchableOpacity, 
   ActivityIndicator,
@@ -165,13 +165,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
             </View>
           )}
           
-          <FlatList
-            data={displayData}
-            keyExtractor={(item) => item.id.toString()}
+          <ScrollView
             keyboardShouldPersistTaps="handled"
             style={styles.list}
-            renderItem={({ item }) => (
+            nestedScrollEnabled={true}
+          >
+            {displayData.map((item) => (
               <TouchableOpacity 
+                key={item.id.toString()}
                 style={styles.resultItem} 
                 onPress={() => handleSelect(item)}
                 accessibilityLabel={`Selecionar cidade ${item.name}, ${item.region}`}
@@ -183,8 +184,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {
                   <Text style={styles.resultRegion}>{item.region}, {item.country}</Text>
                 </View>
               </TouchableOpacity>
-            )}
-          />
+            ))}
+          </ScrollView>
         </View>
       )}
     </View>
